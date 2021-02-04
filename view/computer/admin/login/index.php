@@ -11,7 +11,7 @@
 	<div class="clear"></div>
 	<form class="relative" style="padding-top: 50px;">
 		<div id="login-error" class="hidden">
-			<i class="iconfont icon-warning left"></i>
+			<i class="iconfont icon-bang left orange"></i>
 			<div id="login-error-msg" class="left margin-left-4">请输入帐户名</div>
 		</div>
 		<div class="margin-bottom-20">
@@ -21,14 +21,14 @@
 			<input type="password" class="input" name="password" placeholder="请输入密码" autocomplete="off">
 		</div>
 		<div class="margin-bottom-20">
-			<input type="text" class="input w50 left margin-right-10" name="password" placeholder="验证码" autocomplete="off">
-			<img id="refresh" class="left pointer" height="40" width="80" src="<?php echo url('login/loginCode');?>" onclick="document.getElementById('refresh').src='<?php echo url('login/loginCode');?>'" title="看不清？换一张">
+			<input type="text" class="input w50 left margin-right-10" name="code" placeholder="验证码" autocomplete="off">
+			<img id="refresh" class="left pointer margin-right-10" height="40" width="80" src="<?php echo url('login/loginCode');?>" onclick="document.getElementById('refresh').src='<?php echo url('login/loginCode');?>'" title="看不清？换一张">
 			<div class="clear"></div>
 		</div>
 		<button id="login-btn" type="button" class="btn btn-primary btn-lg btn-block" data-loading-text="Loading...">登录</button>
 	</form>
 </div>
-<script>
+<script type="text/javascript">
 $(document).ready(function(){
 	LOGIN.init();
 });

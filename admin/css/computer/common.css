@@ -159,6 +159,12 @@ body {
 .color-blue {
     color: #0a396d;
 }
+.orange {
+    color: orange;
+}
+.green {
+    color: green;
+}
 .ellipsis-1 {
     overflow: hidden;
     text-overflow: ellipsis;

@@ -6,12 +6,16 @@ var LOGIN = {
 			$(this).parent('form').find('input:visible').each(function(){
 				var name = $(this).attr('name');
 				if (!VERIFY[name]($(this).val())) {
+					$(this).focus();
 					switch (name) {
 						case 'phone':
 							msg = '手机号码格式不正确';
 							break;
 						case 'password':
 							msg = '密码格式不正确';
+							break;
+						case 'code':
+							msg = '验证码格式不正确';
 							break;
 						default:
 							msg = '输入错误';
@@ -20,13 +24,12 @@ var LOGIN = {
 					return false;
 				}
 			});
-
 			if (msg != '') {
 				$('#login-error').removeClass('hidden').find('#login-error-msg').text(msg);
 				return false;
 			}
 			$(this).button('loading');
-			API.post(API_URL+'admin/login/login', $(this).parent('form').serializeArray(), function(res) {
+			$.post(URI+'login/login', $(this).parent('form').serializeArray(), function(res) {
 				if (res.code == 200) {
 					window.location.href = res.data.url;
 				} else {
@@ -35,7 +38,30 @@ var LOGIN = {
 			});
 			$(this).button('reset');
 		});
-
+		//验证码自动校正
+		$('input[name="code"]').on('blur', function(){
+			var code = $(this).val();
+			var thisobj = $(this);
+			if (!VERIFY.code(code)) {
+				$('#login-error').removeClass('hidden').find('#login-error-msg').text('验证码格式不正确');
+				thisobj.parent().find('iconfont').remove();
+				thisobj.next().after('<i class="iconfont icon-bang left orange margin-top-8"></i>');
+				return false;
+			}
+			$.post(URI+'login/checkCode', {code: code}, function(res) {
+				if (res.code == 200) {
+					thisobj.parent().find('iconfont').remove();
+					thisobj.next().after('<i class="iconfont icon-right left green margin-top-8"></i>');
+				} else {
+					thisobj.parent().find('iconfont').remove();
+					thisobj.next().after('<i class="iconfont icon-bang left orange margin-top-8"></i>');
+					$('#login-error').removeClass('hidden').find('#login-error-msg').text(res.message);
+				}
+			});
+		});
+		$('input').on('focus', function(){
+			$('#login-error').addClass('hidden');
+		});
 		document.onkeydown = function(e){
 	        var ev = document.all ? window.event : e;
 	        if(ev.keyCode==13) {

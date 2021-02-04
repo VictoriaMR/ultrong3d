@@ -12,7 +12,6 @@ class LoginController extends Controller
 	{	
 		Html::addCss();
 		Html::addJs();
-		Session::set('admin', []);
 		return view();
 	}
 
@@ -21,6 +20,7 @@ class LoginController extends Controller
 		$imageService = make('App/Services/Common/ImageService');
 		$service = make('App/Services/Base');
 		$code = $service->getSalt();
+		Session::set('admin', []);
 		Session::set('admin_login_code', $code);
 		$imageService->verifyCode($code);
 	    exit();
@@ -54,5 +54,17 @@ class LoginController extends Controller
 		} else {
 			$this->result(10000, $result, ['message' => '账号或者密码不匹配!']);
 		}
+	}
+
+	public function checkCode()
+	{
+		$code = ipost('code', '');
+		if (empty($code)) {
+			return $this->result(10000, [], ['message' => '验证码格式错误!']);
+		}
+		if (strtolower($code) != strtolower(Session::get('admin_login_code'))) {
+			return $this->result(10000, [], ['message' => '验证码错误!']);
+		}
+		$this->result(200, '', ['message' => '验证码正确!']);
 	}
 }

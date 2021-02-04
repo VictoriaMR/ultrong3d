@@ -12,7 +12,7 @@ var VERIFY = {
 		return VERIFY.check(password, reg);
 	},
 	code: function(code) {
-		var reg = /^\d{4,}/;
+		var reg = /^[a-zA-Z0-9]{4,}/;
 		return VERIFY.check(code, reg);
 	},
 	check: function(input, reg) {

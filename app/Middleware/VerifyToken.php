@@ -10,6 +10,7 @@ class VerifyToken
         'Admin/Login/index' => true,
         'Admin/Login/login' => true,
         'Admin/Login/loginCode' => true,
+        'Admin/Login/checkCode' => true,
     ];
 
     public static function handle($request)
