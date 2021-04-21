@@ -28,6 +28,14 @@ class App
         $info = Router::$_route;
         //中间件
         \App\Middleware\VerifyToken::handle($info);
+        //静态js,css
+        if ($info['class'] == 'Admin') {
+            \frame\Html::buildJs(['jquery', 'common', 'bootstrap', 'bootstrap-plugin']);
+            \frame\Html::buildCss(['computer/common', 'computer/bootstrap', 'computer/space', 'icon']);
+        } elseif ($info['class'] == 'Home') {
+            \frame\Html::buildJs(['jquery', 'common']);
+            \frame\Html::buildCss(['icon', (isMobile() ? 'mobile/common' : 'computer/common')]);
+        }
         //执行方法
         $class = 'App\\Controllers\\'.$info['class'].'\\'.$info['path'].'Controller';
         if (is_callable([self::autoload($class), $info['func']])) {
@@ -63,7 +71,11 @@ class App
         if (is_file($file)) {
 			require_once $file;
         } else {
-			throw new \Exception($abstract.' was not exist!', 1);
+            if (env('APP_DEBUG')) {
+                throw new \Exception($abstract.' was not exist!', 1);
+            } else {
+                redirect(url());
+            }
         }
 		return Container::getInstance()->autoload($abstract);
     }

@@ -1,7 +1,10 @@
 <?php
-function dd($data = '') 
+function dd(...$arg) 
 {
-	print_r($data);
+    foreach ($arg as $value) {
+	   print_r($value);
+       echo '<br />';
+    }
     exit();
 }
 function vv($data = '') 
@@ -46,6 +49,14 @@ function isJson($string)
     $string = json_decode($string, true); 
     return json_last_error() == JSON_ERROR_NONE ? $string : false;
 }
+function isWin()
+{
+    return strpos(php_uname(), 'Windows') !== false;
+}
+function isPost()
+{
+    return ($_SERVER['REQUEST_METHOD'] == 'POST' && (empty($_SERVER['HTTP_REFERER']) || preg_replace('~https?:\/\/([^\:\/]+).*~i', '\\1', $_SERVER['HTTP_REFERER']) == preg_replace('~([^\:]+).*~', '\\1', $_SERVER['HTTP_HOST']))) ? true : false;
+}
 function config($name = '') 
 {
     if (empty($name)) return $GLOBALS;
@@ -73,7 +84,7 @@ function view($template = '', $match = true)
 {
     return \frame\View::getInstance()->display($template, $match);
 }
-function url($url = '', $param = []) 
+function url($url = null, $param = null) 
 {
     return \Router::buildUrl($url, $param);
 }
@@ -109,27 +120,123 @@ function redis($db = 0)
 {
     return \frame\Redis::getInstance($db);
 }
+function db($db=null)
+{
+    return \frame\Connection::getInstance($db);
+}
 function siteUrl($url = '')
 {
     return env('APP_DOMAIN').$url;
 }
-function mediaUrl($url = '', $type='')
+function mediaUrl($url = '', $width='')
 {
+    if (!empty($width)) {
+        $ext = pathinfo($url, PATHINFO_EXTENSION);
+        $url = str_replace('.'.$ext, DS.$width.'.'.$ext, $url);
+    }
     if (strpos($url, 'http') === false && strpos($url, 'https') === false) {
-        return env('FILE_CENTER_DOMAIN').DS.$url;
+        return env('FILE_CENTER_DOMAIN').$url;
     }
     return $url;
 }
 function getIp()
 {
-    if (!empty($_SERVER['HTTP_CLIENT_IP']) && strcasecmp($_SERVER['HTTP_CLIENT_IP'], 'unknown')) {
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
         return $_SERVER['HTTP_CLIENT_IP'];
     }
-    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR']) && strcasecmp($_SERVER['HTTP_X_FORWARDED_FOR'], 'unknown')) {
+    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
         return $_SERVER['HTTP_X_FORWARDED_FOR'];
     }
-    if (!empty($_SERVER['REMOTE_ADDR']) && strcasecmp($_SERVER['REMOTE_ADDR'], 'unknown')) {
+    if (!empty($_SERVER['REMOTE_ADDR'])) {
         return $_SERVER['REMOTE_ADDR'];
     }
     return '';
+}
+function filterUrl($str, $c='', $id='', $page='')
+{
+    if (empty($str)) return '';
+    $str = preg_replace('/[^-A-Za-z0-9 ]/', '', $str);
+    $str = preg_replace('/( ){2,}/', ' ', $str);
+    $str = str_replace(' ', '-', $str);
+    $str = str_replace(['---', '--'], '-', $str);
+    $str = strtolower($str);
+    $str .= '-'.$c.'-'.$id;
+    if (!empty($page)) {
+        $str .= '-p'.$page;
+    }
+    return env('APP_DOMAIN').$str.'.html';
+}
+function mysqlVersion()
+{
+    $result = \frame\Connection::getInstance()->query('SELECT version() AS version')->fetch_assoc();
+    return $result['version'] ?? '';
+}
+function getBrowser($agent='')
+{
+    if (empty($agent)) {
+        $agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    }
+    if (empty($agent)) {
+        return '未知设备';
+    } else {
+        if (preg_match('/MSIE/i', $agent)) {
+            return 'MSIE';
+        } elseif (preg_match('/Firefox/i', $agent)) {
+            return 'Firefox';
+        } elseif (preg_match('/Chrome/i', $agent)) {
+            return 'Chrome';
+        } elseif (preg_match('/Safari/i', $agent)) {
+            return 'Safari';
+        } elseif (preg_match('/Opera/i', $agent)) {
+            return 'Opera';
+        } else {
+            return 'Other';
+        }
+    }
+}
+function getSystem($agent = '')
+{
+    if (empty($agent)) {
+        $agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    }
+    if (empty($agent)) {
+        return '未知操作系统';
+    } else {
+        if (preg_match('/win/i', $agent)) {
+            return 'Windows';
+        } elseif (preg_match('/iphone/i', $agent)) {
+            return 'iPhone';
+        } elseif (preg_match('/android/i', $agent)) {
+            return 'Android';
+        } elseif (preg_match('/mac/i', $agent)) {
+            return 'MAC';
+        } elseif (preg_match('/linux/i', $agent)) {
+            return 'Linux';
+        } elseif (preg_match('/unix/i', $agent)) {
+            return 'Unix';
+        } elseif (preg_match('/bsd/i', $agent)) {
+            return 'BSD';
+        } else {
+            return 'Other';
+        }
+    }
+}
+function page($size=null, $total=null)
+{
+    return \frame\Paginator::getInstance()->make($size, $total);
+}
+function now()
+{
+    return date('Y-m-d H:i:s');
+}
+function dist($name)
+{
+    if (empty($name)) {
+        return '';
+    }
+    $trCode = \frame\Session::get('language_tr_code');
+    if (empty($trCode) || in_array($trCode, ['zh', 'cht'])) {
+        return $name;
+    }
+    return make('App/Services/TranslateService')->getText($name, $trCode);
 }
