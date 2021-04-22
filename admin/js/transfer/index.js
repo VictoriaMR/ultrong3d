@@ -1,10 +1,9 @@
 var TRANSFER = {
 	init: function() 
 	{
-		$('#dealbox').offsetCenter();
 		$('.modify').on('click', function(){
-			$('#dealbox').show();
 			TRANSFER.initShow($(this).parents('tr').data());
+			$('#dealbox').dealboxShow();
 		});
 		$('#dealbox button.save').on('click', function(){
 	    	var check = true;
@@ -25,15 +24,13 @@ var TRANSFER = {
 	    });
 	    //重构缓存
 	    $('.reload-cache').on('click', function(){
-	    	$(this).button('loading');
-	    	API.post(ADMIN_URI+'transfer/reloadCache', {}, function(res){
-	    		if (res.code == 200) {
-	    			successTips(res.message);
-	    		} else {
-	    			errorTips(res.message);
-	    		}
+	    	var obj = $(this);
+	    	obj.button('loading');
+	    	post(URI+'transfer/reloadCache', {}, function(res){
+	    		obj.button('reset');
+	    	}, function(){
+	    		obj.button('reset');
 	    	});
-	    	$(this).button('reset');
 	    })
 	},
 	initShow:function (data)
@@ -44,13 +41,10 @@ var TRANSFER = {
 	},
 	save: function ()
 	{
-    	API.post(ADMIN_URI+'transfer/modify', $('#dealbox form').serializeArray(), function(res){
-    		$('#dealbox button.save').html('确认');
-    		if (res.code == 200) {
-    			window.location.reload();
-    		} else {
-    			POP.tips(res.message);
-    		}
+    	post(URI+'transfer/modify', $('#dealbox form').serializeArray(), function(res){
+    		window.location.reload();
+    	}, function(){
+    		$('#dealbox button.save').button('reset');
     	});
     	return true;
 	}

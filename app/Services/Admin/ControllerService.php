@@ -19,16 +19,14 @@ class ControllerService extends BaseService
         $this->baseModel =  $model;
     }
 
-    public function getList($where) 
+    public function getList() 
     {
-    	return $this->baseModel->where($where)->get();
+    	return $this->baseModel->where(['status' => 1])->get();
     }
 
-    public function getListFormat($where = []) 
+    public function getListFormat() 
     {
-    	$list = $this->getList($where);
-
-    	return $this->listFormat($this->getList($where));
+    	return $this->listFormat($this->getListCache());
     }
 
     protected function listFormat($list, $parentId = 0) 
@@ -47,9 +45,27 @@ class ControllerService extends BaseService
     	return $returnData;
     }
 
+    public function getListCache()
+    {
+        $cacheKey = 'ADMIN_CONTROLLER_LIST';
+        $list = redis()->get($cacheKey);
+        if (empty($list)) {
+            $list = $this->getList();
+            redis()->set($cacheKey, $list, -1);
+        }
+        return $list;
+    }
+
+    public function deleteCache()
+    {
+        $cacheKey = 'ADMIN_CONTROLLER_LIST';
+        redis()->del($cacheKey);
+        return true;
+    }
+
     public function getTextByName($path) 
     {
-        $list = $this->getList([]);
+        $list = $this->getListCache();
         $list = array_column($list, 'name', 'name_en');
         return $list[lcfirst($path)] ?? '';
     }

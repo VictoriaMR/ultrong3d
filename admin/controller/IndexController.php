@@ -16,7 +16,7 @@ class IndexController extends Controller
 
 		//获取控制器列表
 		$controllerService = \App::make('App\Services\Admin\ControllerService');
-		$controllerList = $controllerService->getListFormat(['status'=>1]);
+		$controllerList = $controllerService->getListFormat();
 
 		//网站信息
 		$siteService = \App::make('App/Services/SiteService');

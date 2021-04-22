@@ -19,31 +19,27 @@ class LanguageService extends BaseService
      * @param  [type]     $data [description]
      * @return array
      */
-    public function getListCache($where = [])
+    public function getListCache()
     {
-    	$cacheKey = 'LANGUAGE_LIST_ON_CACHE';
+    	$cacheKey = 'LANGUAGE_LIST_CACHE';
     	$list = Redis()->get($cacheKey);
     	if (empty($list)) {
-    		$list = $this->baseModel->where('status', 1)->get();
+    		$list = $this->getList();
     		Redis()->set($cacheKey, $list, -1);
     	}
 
     	return $list;
     }
 
-    public function getList($where = [])
+    public function getList()
     {
         return $this->baseModel->get();
     }
 
     public function clearCache()
     {
-        $cacheKey = 'LANGUAGE_LIST_ON_CACHE';
+        $cacheKey = 'LANGUAGE_LIST_CACHE';
         Redis()->del($cacheKey);
-
-        $cacheKey = 'LANGUAGE_LIST_ALL_CACHE';
-        Redis()->del($cacheKey);
-
         return true;
     }
 

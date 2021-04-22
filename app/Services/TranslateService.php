@@ -4,17 +4,15 @@ namespace App\Services;
 
 use App\Services\Base as BaseService;
 use App\Models\Translate;
-use App\Models\TranslateConfig;
 use frame\Session;
 
 class TranslateService extends BaseService
 {
     const CACHE_KEY = 'SITE_TRANSLATE_TEXT_';
 
-	public function __construct(Translate $translate, TranslateConfig $config)
+	public function __construct(Translate $translate)
     {
         $this->baseModel = $translate;
-        $this->transModel = $config;
     }
 
     /**
@@ -98,55 +96,12 @@ class TranslateService extends BaseService
         return $this->baseModel->where($where)->count();
     }
 
-    public function getInterfaceList($where = [], $page = 1, $size = 20)
-    {
-        $list = $this->transModel->getInterfaceList($where, $page, $size);
-        return $list;
-    }
-
-    public function getInterfaceListTotal($where = [])
-    {
-        return $this->transModel->where($where)->count();
-    }
-
-    public function updateConfigById($id, $data)
-    {
-        if (empty($id) || empty($data)) return false;
-
-        return $this->transModel->updateDataById($id, $data);
-    }
-
-    public function addConfig($data)
-    {
-        if (empty($data)) return false;
-
-        return $this->transModel->insert($data);
-    }
-
-    public function modifyConfig($id, $data)
-    {
-        if (empty($id) || empty($data)) return false;
-        return $this->transModel->updateDataById($id, $data);
-    }
-
-    public function checkConfig($id)
-    {
-        if (empty($id)) return false;
-
-        $result = \frame\Http::get('1231');
-
-        if ($result['error']) return false;
-
-        return $this->transModel->updateDataById($id, ['checked'=>1]);
-    }
-
     public function reloadCache()
     {
-        $languageService = \App::make('App/Services/LanguageService');
-        $list = $languageService->getList();
+        $list = make('App/Services/LanguageService')->getListCache();
 
         foreach ($list as $key => $value) {
-            $cacheKey = self::CACHE_KEY.strtoupper($value['value']);
+            $cacheKey = self::CACHE_KEY.strtoupper($value['code']);
             Redis(1)->del($cacheKey);
         }
 
@@ -158,17 +113,16 @@ class TranslateService extends BaseService
         $tempData = [];
 
         foreach ($data as $key => $value) {
-            if (!isset($tempData[$value['type']]))
+            if (!isset($tempData[$value['type']])){
                 $tempData[$value['type']] = [];
+            }
 
             $tempData[$value['type']][$value['name']] = $value['value'];
         }
-
         foreach ($tempData as $key => $value) {
             $cacheKey = self::CACHE_KEY.strtoupper($key);
             Redis(1)->hmset($cacheKey, $value);
         }
-
         return true;
     }
 
