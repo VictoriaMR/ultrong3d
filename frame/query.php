@@ -4,21 +4,15 @@ namespace frame;
 
 Class Query
 {
-	private $_connect;
-	private $_database;
-	private $_table;
-	private $_columns;
-	private $_where;
-	private $_whereString;
-	private $_groupBy='';
-	private $_orderBy='';
-	private $_offset;
-	private $_limit=1;
-
-	public function __construct($connect) 
-	{
-		$this->_connect = $connect;
-	}
+	protected $_connect;
+	protected $_table;
+	protected $_columns;
+	protected $_where;
+	protected $_whereString;
+	protected $_groupBy='';
+	protected $_orderBy='';
+	protected $_offset;
+	protected $_limit=1;
 
 	public function table($table = '')
 	{
@@ -276,7 +270,7 @@ Class Query
 		if (env('APP_DEBUG')) {
 			$GLOBALS['exec_sql'][] = $sql;
 		}
-		$conn = \frame\Connection::getInstance($this->_connect, $this->_database);
+		$conn = \frame\Connection::getInstance($this->_connect);
 		if ($stmt = $conn->query($sql)) {
 			if (is_bool($stmt)) {
 				return $stmt;

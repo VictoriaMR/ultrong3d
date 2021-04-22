@@ -29,17 +29,22 @@ class App
         //中间件
         \App\Middleware\VerifyToken::handle($info);
         //静态js,css
-        if ($info['class'] == 'Admin') {
+        if ($info['class'] == 'Home') {
+
+        } elseif ($info['class'] == 'Admin') {
             \frame\Html::buildJs(['jquery', 'common', 'bootstrap', 'bootstrap-plugin']);
-            \frame\Html::buildCss(['computer/common', 'computer/bootstrap', 'computer/space', 'icon']);
-        } elseif ($info['class'] == 'Home') {
-            \frame\Html::buildJs(['jquery', 'common']);
-            \frame\Html::buildCss(['icon', (isMobile() ? 'mobile/common' : 'computer/common')]);
+            \frame\Html::buildCss(['common', 'bootstrap', 'space', 'icon']);
         }
         //执行方法
-        $class = 'App\\Controllers\\'.$info['class'].'\\'.$info['path'].'Controller';
+        $class = $info['class'].'\\Controller\\'.$info['path'].'Controller';
         if (is_callable([self::autoload($class), $info['func']])) {
             call_user_func_array([self::autoload($class), $info['func']], []);
+        } else {
+            if (env('APP_DEBUG')) {
+                throw new \Exception($class.' was not exist!', 1);
+            } else {
+                redirect(url());
+            }
         }
         $this->runover();
     }
@@ -62,10 +67,14 @@ class App
             return Container::$_building[$abstract];
         }
         $file = strtr($abstract, '\\', DS);
-        if (strpos($file, 'App') === 0) {
-            $file = lcfirst($file);
-        } else if (strpos($file, 'frame') !== false) {
+        if (strpos($file, 'frame') !== false) {
             $file = strtolower($file);
+        } else if (strpos($file, 'App'.DS) !== false){
+            $file = lcfirst($file);
+        } else {
+            $file = explode(DS, $file);
+            $template = array_pop($file);
+            $file = strtolower(implode(DS, $file)).DS.$template;
         }
         $file = ROOT_PATH.$file.'.php';
         if (is_file($file)) {

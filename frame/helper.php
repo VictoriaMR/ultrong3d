@@ -62,10 +62,6 @@ function config($name = '')
     if (empty($name)) return $GLOBALS;
     return $GLOBALS[$name] ?? [];
 }
-function dbconfig($db = 'default')
-{
-    return config('database')[$db] ?? [];
-}
 function env($name = '', $replace = '')
 {
     if (empty($name)) return config('ENV');

@@ -23,17 +23,16 @@ class Connection
 	 * @method 数据库链接单例方法
 	 * @date   2020-05-25
 	 */
-	public static function getInstance($db = null, $database = null) 
+	public static function getInstance($db = null) 
 	{
-		if (is_null($db)) $db = 'default';
-		if (is_null($database)) $database = env('DB_DATABASE');
+		if (empty($db)) $db = 'default';
 
-		if (empty(self::$_instance[$db][$database])) {
-			$config = dbconfig($db);
+		if (empty(self::$_instance[$db])) {
+			$config = config('database')[$db] ?? [];
 			if (empty($config)) {
 				throw new \Exception('Connect Error： Cannot found '.$db.' in config/database', 1);
 			}
-			self::$_instance[$db][$database] = self::connect(
+			self::$_instance[$db] = self::connect(
 				$config['db_host'] ?? '', 
 				$config['db_username'] ?? '', 
 				$config['db_password'] ?? '', 
@@ -42,6 +41,6 @@ class Connection
 				$config['db_charset'] ?? ''
 			);
 		}
-		return self::$_instance[$db][$database];
+		return self::$_instance[$db];
 	}
 }
